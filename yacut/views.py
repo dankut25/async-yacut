@@ -48,7 +48,7 @@ async def upload_files_view():
     """
     form = FileUploadForm()
     files = []
-    host_url = request.host_url
+    host_url = request.host_url.replace(':5000', '')
 
     if form.validate_on_submit():
         files = await async_upload_files_to_yadisc(form.files.data, host_url)

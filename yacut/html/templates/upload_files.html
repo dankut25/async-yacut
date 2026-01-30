@@ -42,29 +42,20 @@
         {% endif %}
       {% endwith %}
 
-      <div class="container">
-        <div class="row justify-content-center">
-          <div class="col-md-6">
-            {% if files %}
-              {% for file in files %}
-                <div class="row py-2 border-bottom">
-                  <div class="col-6 text-start text-break">
-                    {{ file.name }}
-                  </div>
-                  <div class="col-6 text-start text-break">
-                    {% if file.error %}
-                      <span class="text-danger">
-                        <strong>Ошибка:</strong> {{ file.error }}
-                      </span>
-                    {% else %}  
-                      <a href="{{ file.url }}">{{ file.url }}</a>
-                    {% endif %}
-                  </div>
-                </div>
-              {% endfor%}
-            {% endif %}
-          </div>
-        </div>
+      <div class="col-md-8">
+        {% if files %}
+          {% for file in files %}
+            <div class="py-2 border-bottom">
+              {# Название и ссылка в одной строке без лишних div внутри #}
+              <span>{{ file.name }}</span>: 
+              {% if file.url %}
+                <a href="{{ file.url }}">{{ file.url }}</a>
+              {% else %}
+                <span class="text-danger">Ошибка: {{ file.error }}</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        {% endif %}
       </div>
     </section>
   </main>
