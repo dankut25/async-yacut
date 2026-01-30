@@ -109,12 +109,11 @@ async def upload_file(
     """
     try:
         async with session.put(data=file.stream, url=upload_url, ) as response:
-            location = response.headers['Location']
-            location = urllib.parse.unquote(location)
-            location = location.replace('/disk', '')
+            if response.status not in (200, 201):
+                raise AsyncUploadFileError
     except Exception:
         raise AsyncUploadFileError
-    return location
+    return 'app:/' + file.filename
 
 
 async def get_download_url(session: ClientSession, location: str) -> str:
