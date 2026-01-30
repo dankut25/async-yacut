@@ -1,6 +1,6 @@
 """View-функции для сайта yacut."""
 
-from flask import flash, redirect, render_template, request
+from flask import flash, redirect, render_template
 
 from . import app
 from .error_handlers import ErrorInDBSave, ErrorInURLNaming
