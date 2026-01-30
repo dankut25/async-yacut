@@ -57,7 +57,7 @@
                         <strong>Ошибка:</strong> {{ file.error }}
                       </span>
                     {% else %}  
-                      http://127.0.0.1:5000/{{ file.url }}
+                      <a href="{{ file.url }}">{{ file.url }}</a>
                     {% endif %}
                   </div>
                 </div>

@@ -133,7 +133,7 @@ async def get_download_url(session: ClientSession, location: str) -> str:
 
 
 async def upload_file_and_get_url(
-        session: ClientSession, file: FileStorage
+        session: ClientSession, file: FileStorage, host_url: str
 ) -> Dict[str, str]:
     """Загрузка одного файла на ЯндексДиск и получение ссылки на скачивание.
 
@@ -148,7 +148,11 @@ async def upload_file_and_get_url(
         # наблюдались ошибки в БД из параллельных обращений.
         async with db_semaphore:
             url = await asyncio.to_thread(get_unique_short_id, link)
-        return {'name': file.filename, 'url': url, 'error': ''}
+        return {
+            'name': file.filename,
+            'url': f"{host_url.rstrip('/')}/{url}",
+            'error': ''
+        }
     except AsyncGetUploadURLError:
         message = 'Не удалось получить ссылку для загрузки на диск.'
     except AsyncUploadFileError:
@@ -161,7 +165,7 @@ async def upload_file_and_get_url(
 
 
 async def async_upload_files_to_yadisc(
-        files: List[FileStorage]
+        files: List[FileStorage], host_url: str
 ) -> List[Dict[str, str]]:
     """Управление загрузкой присланных файлов на ЯндексДиск.
 
@@ -172,7 +176,9 @@ async def async_upload_files_to_yadisc(
         return []
 
     async with aiohttp.ClientSession() as session:
-        tasks = list(upload_file_and_get_url(session, file) for file in files)
+        tasks = list(
+            upload_file_and_get_url(session, file, host_url) for file in files
+        )
         uploaded_files = await asyncio.gather(*tasks)
     return uploaded_files
 
