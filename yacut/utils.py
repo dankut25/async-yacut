@@ -161,6 +161,8 @@ async def upload_file_and_get_url(
         message = 'Не удалось получить ссылку для скачивания.'
     except ErrorInDBSave:
         message = 'Не удалось создать запись в БД.'
+    except Exception as e:
+        message = f'Непредвиденная ошибка: {str(e)}'
     return {'name': file.filename, 'url': '', 'error': message}
 
 
