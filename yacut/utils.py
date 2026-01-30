@@ -108,12 +108,14 @@ async def upload_file(
     Возвращает короткий путь к файлу на ЯндексДиске.
     """
     try:
-        async with session.put(data=file.stream, url=upload_url, ) as response:
+        content = file.read()
+        file.seek(0)
+        async with session.put(data=content, url=upload_url, ) as response:
             if response.status not in (200, 201):
                 raise AsyncUploadFileError
     except Exception:
         raise AsyncUploadFileError
-    return 'app:/' + file.filename
+    return 'app:/' + urllib.parse.quote(file.filename)
 
 
 async def get_download_url(session: ClientSession, location: str) -> str:
@@ -122,7 +124,7 @@ async def get_download_url(session: ClientSession, location: str) -> str:
         async with session.get(
             headers={"Authorization": f'OAuth {os.getenv("DISK_TOKEN")}'},
             url=DOWNLOAD_LINK_URL,
-            params={'path': f'{location}'}
+            params={'path': location}
         ) as response:
             data = await response.json()
             link = data['href']
