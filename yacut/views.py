@@ -1,6 +1,6 @@
 """View-функции для сайта yacut."""
 
-from flask import flash, redirect, render_template, request
+from flask import flash, redirect, render_template
 
 from . import app
 from .error_handlers import ErrorInDBSave, ErrorInURLNaming
@@ -49,12 +49,8 @@ async def upload_files_view():
     form = FileUploadForm()
     files = []
     host_url = 'http://localhost'
-    if request.method == 'POST':
-        files_data = (
-            form.files.data if form.validate_on_submit() else
-            request.files.getlist('files')
-        )
-        if files_data:
-            files = await async_upload_files_to_yadisc(files_data, host_url)
+
+    if form.validate_on_submit():
+        files = await async_upload_files_to_yadisc(form.files.data, host_url)
 
     return render_template('upload_files.html', form=form, files=files)

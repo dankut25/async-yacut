@@ -150,7 +150,7 @@ async def upload_file_and_get_url(
             url = await asyncio.to_thread(get_unique_short_id, link)
         return {
             'name': file.filename,
-            'url': f"{host_url.rstrip('/')}/{url}",
+            'url': f"{host_url.rstrip('/')}/{url.lstrip('/')}",
             'error': ''
         }
     except AsyncGetUploadURLError:

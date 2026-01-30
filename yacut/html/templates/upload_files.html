@@ -45,15 +45,7 @@
       <div class="col-md-8">
         {% if files %}
           {% for file in files %}
-            <div class="py-2 border-bottom">
-              {# Название и ссылка в одной строке без лишних div внутри #}
-              <span>{{ file.name }}</span>: 
-              {% if file.url %}
-                <a href="{{ file.url }}">{{ file.url }}</a>
-              {% else %}
-                <span class="text-danger">Ошибка: {{ file.error }}</span>
-              {% endif %}
-            </div>
+            <p>{{ file.name }}: <a href="{{ file.url }}">{{ file.url }}</a> {{ file.error }}</p>
           {% endfor %}
         {% endif %}
       </div>
