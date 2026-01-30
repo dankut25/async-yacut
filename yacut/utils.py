@@ -121,7 +121,7 @@ async def get_download_url(session: ClientSession, location: str) -> str:
     """Получение ссылки на загрузку файла по короткому пути на ЯндексДиске."""
     try:
         async with session.get(
-            headers={"Authorization": f'OAuth {os.getenv('DISK_TOKEN')}'},
+            headers={"Authorization": f'OAuth {os.getenv("DISK_TOKEN")}'},
             url=DOWNLOAD_LINK_URL,
             params={'path': f'{location}'}
         ) as response:
