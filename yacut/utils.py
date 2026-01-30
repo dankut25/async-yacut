@@ -2,6 +2,7 @@
 
 import aiohttp
 import asyncio
+import os
 import random
 import re
 import string
@@ -13,7 +14,6 @@ from werkzeug.datastructures import FileStorage
 
 from . import db
 from .constants import (
-    AUTH_HEADER,
     BAD_URL,
     CORRECT_SYMBOLS,
     DOWNLOAD_LINK_URL,
@@ -89,7 +89,7 @@ async def get_upload_url(session: ClientSession, file: FileStorage) -> str:
     }
     try:
         async with session.get(
-            headers=AUTH_HEADER,
+            headers={"Authorization": f'OAuth {os.getenv('DISK_TOKEN')}'},
             params=payload,
             url=REQUEST_UPLOAD_URL
         ) as response:
@@ -121,7 +121,7 @@ async def get_download_url(session: ClientSession, location: str) -> str:
     """Получение ссылки на загрузку файла по короткому пути на ЯндексДиске."""
     try:
         async with session.get(
-            headers=AUTH_HEADER,
+            headers={"Authorization": f'OAuth {os.getenv('DISK_TOKEN')}'},
             url=DOWNLOAD_LINK_URL,
             params={'path': f'{location}'}
         ) as response:
@@ -163,7 +163,7 @@ async def upload_file_and_get_url(
         message = 'Не удалось создать запись в БД.'
     except Exception as e:
         message = f'Непредвиденная ошибка: {str(e)}'
-    return {'name': file.filename, 'url': 'http://localhost', 'error': message}
+    return {'name': file.filename, 'url': '', 'error': message}
 
 
 async def async_upload_files_to_yadisc(
