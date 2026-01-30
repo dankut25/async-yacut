@@ -84,7 +84,7 @@ def get_unique_short_id(full_url: str, short_url: str = '') -> str:
 async def get_upload_url(session: ClientSession, file: FileStorage) -> str:
     """Получение ссылки на загрузку файла."""
     payload = {
-        'path': 'app:/' + file.filename,
+        'path': 'app:/' + urllib.parse.quote(file.filename),
         'overwrite': f'{OVERWRITE}'
     }
     try:
