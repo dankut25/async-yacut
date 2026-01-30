@@ -89,7 +89,7 @@ async def get_upload_url(session: ClientSession, file: FileStorage) -> str:
     }
     try:
         async with session.get(
-            headers={"Authorization": f'OAuth {os.getenv('DISK_TOKEN')}'},
+            headers={"Authorization": f'OAuth {os.getenv("DISK_TOKEN")}'},
             params=payload,
             url=REQUEST_UPLOAD_URL
         ) as response:
