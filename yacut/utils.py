@@ -163,7 +163,7 @@ async def upload_file_and_get_url(
         message = 'Не удалось создать запись в БД.'
     except Exception as e:
         message = f'Непредвиденная ошибка: {str(e)}'
-    return {'name': file.filename, 'url': '', 'error': message}
+    return {'name': file.filename, 'url': 'http://localhost', 'error': message}
 
 
 async def async_upload_files_to_yadisc(
