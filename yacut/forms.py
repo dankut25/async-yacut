@@ -3,9 +3,10 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import MultipleFileField
 from wtforms import SubmitField, URLField
-from wtforms.validators import DataRequired, Length, Optional, Regexp, URL
+from wtforms.validators import DataRequired, Length, URL
 
-from .constants import CORRECT_SYMBOLS, LINK, SHORT_LINK_MAX
+from .constants import LINK
+from .validators import ValidateShortURL
 
 
 class URLForm(FlaskForm):
@@ -15,8 +16,7 @@ class URLForm(FlaskForm):
         'Длинная ссылка',
         validators=[
             Length(
-                1,
-                LINK,
+                max=LINK,
                 message='Слишком длинная ссылка.'
             ),
             DataRequired(message='Обязательное поле'),
@@ -25,20 +25,7 @@ class URLForm(FlaskForm):
     )
     custom_id = URLField(
         'Ваш вариант короткой ссылки',
-        validators=[
-            Length(
-                1,
-                SHORT_LINK_MAX,
-                message=(
-                    f'Длина должна быть от 1 до {SHORT_LINK_MAX} символов.'
-                )
-            ),
-            Regexp(
-                CORRECT_SYMBOLS,
-                message='Можно использовать только латинские буквы и цифры'
-            ),
-            Optional()
-        ]
+        validators=[ValidateShortURL()]
     )
     submit = SubmitField('Создать')
 

@@ -4,11 +4,11 @@ import aiohttp
 import asyncio
 import os
 import random
-import re
 import string
 import urllib.parse
 
 from aiohttp import ClientSession
+from http import HTTPStatus
 from typing import Dict, List
 from werkzeug.datastructures import FileStorage
 
@@ -19,6 +19,7 @@ from .constants import (
     DOWNLOAD_LINK_URL,
     OPTIONAL_KEY,
     OVERWRITE,
+    SHORT_LINK_MAX,
     RANDOM_STRING_LENGTH,
     REQUEST_UPLOAD_URL,
     REQUIRED_KEY
@@ -32,6 +33,7 @@ from .error_handlers import (
     InvalidAPIUsage
 )
 from .models import URLMap
+from .validators import ShortURLValidator
 
 
 db_semaphore = asyncio.Semaphore(1)
@@ -111,7 +113,7 @@ async def upload_file(
         content = file.read()
         file.seek(0)
         async with session.put(data=content, url=upload_url, ) as response:
-            if response.status not in (200, 201):
+            if response.status not in (HTTPStatus.OK, HTTPStatus.CREATED):
                 raise AsyncUploadFileError
     except Exception:
         raise AsyncUploadFileError
@@ -134,7 +136,7 @@ async def get_download_url(session: ClientSession, location: str) -> str:
 
 
 async def upload_file_and_get_url(
-        session: ClientSession, file: FileStorage, host_url: str
+        session: ClientSession, file: FileStorage
 ) -> Dict[str, str]:
     """Загрузка одного файла на ЯндексДиск и получение ссылки на скачивание.
 
@@ -149,11 +151,7 @@ async def upload_file_and_get_url(
         # наблюдались ошибки в БД из параллельных обращений.
         async with db_semaphore:
             url = await asyncio.to_thread(get_unique_short_id, link)
-        return {
-            'name': file.filename,
-            'url': f"{host_url.rstrip('/')}/{url.lstrip('/')}",
-            'error': ''
-        }
+        return {'name': file.filename, 'url': url, 'error': ''}
     except AsyncGetUploadURLError:
         message = 'Не удалось получить ссылку для загрузки на диск.'
     except AsyncUploadFileError:
@@ -168,7 +166,7 @@ async def upload_file_and_get_url(
 
 
 async def async_upload_files_to_yadisc(
-        files: List[FileStorage], host_url: str
+        files: List[FileStorage]
 ) -> List[Dict[str, str]]:
     """Управление загрузкой присланных файлов на ЯндексДиск.
 
@@ -180,7 +178,7 @@ async def async_upload_files_to_yadisc(
 
     async with aiohttp.ClientSession() as session:
         tasks = list(
-            upload_file_and_get_url(session, file, host_url) for file in files
+            upload_file_and_get_url(session, file) for file in files
         )
         uploaded_files = await asyncio.gather(*tasks)
     return uploaded_files
@@ -194,18 +192,9 @@ def validate_api_data(data: Dict):
     if REQUIRED_KEY not in data:
         raise InvalidAPIUsage('\"url\" является обязательным полем!')
 
-    if OPTIONAL_KEY in data:
-        short_url = data[OPTIONAL_KEY]
+    validator = ShortURLValidator.create(data.get(OPTIONAL_KEY))
 
-        if not isinstance(short_url, str):
-            raise InvalidAPIUsage(
-                'Указано недопустимое имя для короткой ссылки'
-            )
-
-        length = len(short_url) <= 16
-        symbols = re.match(CORRECT_SYMBOLS, short_url)
-
-        if not (length and symbols):
-            raise InvalidAPIUsage(
-                'Указано недопустимое имя для короткой ссылки'
-            )
+    if validator and not validator.check_all(SHORT_LINK_MAX, CORRECT_SYMBOLS):
+        raise InvalidAPIUsage(
+            'Указано недопустимое имя для короткой ссылки'
+        )

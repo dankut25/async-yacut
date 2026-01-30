@@ -1,6 +1,7 @@
 """View-функции для API проекта YaCut."""
 
 from flask import jsonify, request
+from http import HTTPStatus
 
 from . import app
 from .constants import OPTIONAL_KEY, TO_DICT_SHORT_URL, REQUIRED_KEY
@@ -31,7 +32,7 @@ def get_short_url():
         'url': data[REQUIRED_KEY],
         TO_DICT_SHORT_URL: request.host_url + short_id
     }
-    return jsonify(result), 201
+    return jsonify(result), HTTPStatus.CREATED
 
 
 @app.route('/api/id/<short_id>/', methods=['GET'])
@@ -40,6 +41,6 @@ def redirect_api(short_id: str):
     link = URLMap.query.filter_by(short=short_id).first()
 
     if link is None:
-        raise InvalidAPIUsage('Указанный id не найден', 404)
+        raise InvalidAPIUsage('Указанный id не найден', HTTPStatus.NOT_FOUND)
 
     return jsonify({'url': link.original})
