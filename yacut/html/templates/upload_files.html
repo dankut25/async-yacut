@@ -56,8 +56,9 @@
                       <span class="text-danger">
                         <strong>Ошибка:</strong> {{ file.error }}
                       </span>
-                    {% else %}  
-                      <a href="{{ request.host_url }}{{ file.url }}">{{ request.host_url }}{{ file.url }}</a>
+                    {% endif %}
+                    {% if file.url %}  
+                      <a href="{{ request.host_url }}{{ file.url }} " rel="noreferrer" target="_blank">{{ request.host_url }}{{ file.url }}</a>
                     {% endif %}
                   </div>
                 </div>

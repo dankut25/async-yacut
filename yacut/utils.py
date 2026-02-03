@@ -86,7 +86,7 @@ def get_unique_short_id(full_url: str, short_url: str = '') -> str:
 async def get_upload_url(session: ClientSession, file: FileStorage) -> str:
     """Получение ссылки на загрузку файла."""
     payload = {
-        'path': 'app:/' + urllib.parse.quote(file.filename),
+        'path': f'app:/{file.filename}',
         'overwrite': f'{OVERWRITE}'
     }
     try:
@@ -110,14 +110,19 @@ async def upload_file(
     Возвращает короткий путь к файлу на ЯндексДиске.
     """
     try:
-        content = file.read()
-        file.seek(0)
+        #content = file.read()
+        #file.seek(0)
+        content = file.stream
         async with session.put(data=content, url=upload_url, ) as response:
             if response.status not in (HTTPStatus.OK, HTTPStatus.CREATED):
                 raise AsyncUploadFileError
+
+            data = response.headers['Location']
+            location = urllib.parse.unquote(data)
+            location = location.replace('/disk', '')
     except Exception:
         raise AsyncUploadFileError
-    return 'app:/' + urllib.parse.quote(file.filename)
+    return location
 
 
 async def get_download_url(session: ClientSession, location: str) -> str:
